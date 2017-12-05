@@ -1,21 +1,115 @@
 new Vue({
   el: "#app",
   data: {
-    message: "Hello Azure!"
+    message: "Hello Azure!",
+    tenant_id: "",
+    client_id: "",
+    client_secret: "",
+    token: "",
+    isLoginVisible: true,
+    isLoading: false,
+    subscriptions: [],
+    subscription_selected: "",
+    az_resources: []
   },
   methods: {
-    login: function() {
+    getToken: function() {
+      console.log("Login to get token...");
+      var body = {
+        tenant_id: this.tenant_id,
+        client_id: this.client_id,
+        client_secret: this.client_secret
+      };
+      this.$http
+        .post("/login", body)
+        .then(
+          response => {
+            this.token = response.body.access_token;
+            console.log("token: " + response);
+          },
+          response => {
+            console.log("error posting...");
+          }
+        )
+        .then(() => {
+          this.getSubscription();
+        });
+    },
+    getSubscription: function() {
+      console.log("Getting Subscrptions...");
+      var headers = {
+        token: this.token
+      };
+      var body = "";
+      this.$http
+        .get("/subscriptions", body, headers)
+        .then(
+          response => {
+            console.log(
+              "Selected Subscription: " + response.body.value[0].subscriptionId
+            );
+            this.subscription_selected = response.body.value[0].subscriptionId;
+            this.subscriptions = response.body.value;
+          },
+          response => {
+            console.log("error posting...");
+          }
+        )
+        .then(() => {
+          this.loadResourceView();
+        });
+    },
+    loadResourceView: function() {
+      console.log("Load Resources...");
+      var headers = {
+        token: this.token,
+        subscription: this.subscription_selected
+      };
+      var body = "/resourcegroups?api-version=2017-05-10";
+      this.$http
+        .post("/azureroute", body)
+        .then(
+          response => {
+            this.az_resources = response.body.value;
+            console.log("azure route: " + response);
+          },
+          response => {
+            console.log("error posting...");
+          }
+        )
+        .then(() => {
+          this.render(
+            this.az_resources.map(connection => {
+              return connection.name;
+            })
+          );
+        });
+    },
+    logout: function() {
+      console.log("logout...");
+      tenant_id = "";
+      client_id = "";
+      client_secret = "";
+    },
+    render: function(connections) {
       var sys = arbor.ParticleSystem(1000, 600, 0.5); // create the system with sensible repulsion/stiffness/friction
       sys.parameters({ gravity: true }); // use center-gravity to make the graph settle nicely (ymmv)
       sys.renderer = this.Renderer("#viewport"); // our newly created renderer will have its .init() method called shortly by sys...
 
       // add some nodes to the graph and watch it go...
-      sys.addEdge("a", "b");
-      sys.addEdge("a", "c");
-      sys.addEdge("a", "d");
-      sys.addEdge("a", "e");
-      sys.addNode("f", { alone: true, mass: 0.25 });
-      console.log("login completed...");
+      // sys.addEdge("a", "b");
+      // sys.addEdge("a", "c");
+      // sys.addEdge("a", "d");
+      // sys.addEdge("a", "e");
+      // sys.addNode("f", { alone: true, mass: 0.25 });
+
+      for (connection of connections) {
+        sys.addNode(connection, { length:8, alone: true, mass: 0.25 });
+        console.log(connection)
+
+        // sys.addEdge(connection, connection);
+      }
+      console.log("render completed...");
     },
     Renderer: function(canvas) {
       console.log("Renderer...");
@@ -44,7 +138,6 @@ new Vue({
         },
 
         redraw: function() {
-          console.log("redraw...")
           //
           // redraw will be called repeatedly during the run whenever the node positions
           // change. the new positions for the nodes can be accessed by looking at the
@@ -134,5 +227,19 @@ new Vue({
       };
       return that;
     }
+  },
+  created: function() {
+    this.$nextTick(() => {
+      console.debug("Verifying if server is configured...");
+      fetch("/serverlogin")
+        .then(res => {
+          if (res.status == 200) {
+            // Server configured
+            this.isLoginVisible = true;
+            this.getToken();
+          }
+        })
+        .catch((this.isLoginVisible = false)); //Not configured
+    });
   }
 });

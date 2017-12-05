@@ -2,6 +2,11 @@
 
 import os
 from flask import Flask, render_template, redirect, url_for, request, current_app
+from flask_api import status
+from werkzeug.wrappers import BaseResponse as Response
+import requests
+import json
+from azure.common.credentials import ServicePrincipalCredentials
 
 app = Flask(__name__)  # Instantiate Flask
 
@@ -9,7 +14,10 @@ app = Flask(__name__)  # Instantiate Flask
 app.config['PORT'] = os.getenv('PORT', 5000)
 app.config['EXPIRE_TIME'] = os.getenv('EXPIRE_TIME', 300)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'AZURESECRETKEY')
-
+app.config['TENANT_ID'] = os.getenv('TENANT_ID', '')
+app.config['CLIENT_ID'] = os.getenv('CLIENT_ID', '')
+app.config['CLIENT_SECRET'] = os.getenv('CLIENT_SECRET', '')
+app.config['SUBSCRIPTION'] = os.getenv('SUBSCRIPTION', '')
 
 
 @app.route('/', methods=['GET'])
@@ -17,15 +25,123 @@ def root():
     ''' Read the root document and load form'''
     return current_app.send_static_file('index.html')
 
+
+def isServerPreconfigured():
+    ''' Return True if the server was configured using the environmental variables '''
+    return not(app.config['CLIENT_ID'] == '' or app.config['CLIENT_SECRET'] == '' or app.config['TENANT_ID'] == '' or app.config['SUBSCRIPTION'] == '')
+
+
+@app.route('/serverlogin', methods=['GET'])
+def serverlogin():
+    ''' Provides the status of the server environmetal variable '''
+    # print(app.config['CLIENT_ID'])
+    if isServerPreconfigured():
+        return 'Server Pre-Configured', status.HTTP_200_OK
+    else:
+        return 'Server Not Pre-Configured.  Setup up your environmental variables properly', status.HTTP_417_EXPECTATION_FAILED
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    ''' Create a login request to Azure'''
+    if isServerPreconfigured():
+        print('Serve configured using environmental variables')
+        tenant_id = app.config['TENANT_ID']
+        client_id = app.config['CLIENT_ID']
+        client_secret = app.config['CLIENT_SECRET']
+    else:
+        print('Server not configured using client auth')
+        payload = json.loads(request.get_data().decode('utf-8'))
+        tenant_id = payload['tenant_id']
+        client_id = payload['client_id']
+        client_secret = payload['client_secret']
+
+    url = str.format(
+        "https://login.microsoftonline.com/{0}/oauth2/token", tenant_id)
+    payload = str.format("grant_type=client_credentials" +
+                         "&client_id={0}" +
+                         "&client_secret={1}" +
+                         "&resource=https%3A%2F%2Fmanagement.azure.com%2F",
+                         client_id, client_secret)
+    headers = {
+        'content-type': "application/x-www-form-urlencoded",
+        'cache-control': "no-cache",
+    }
+    print(url)
+    response = requests.request("POST", url, data=payload, headers=headers)
+    print("/login status code: " + str(response.status_code))
+    print(response.text)
+
+    if isServerPreconfigured():
+        app.config['ACCESS_TOKEN'] = json.loads(response.text)['access_token']
+        print("Server preconfigured")
+        return 'Server preconfigured', status.HTTP_204_NO_CONTENT
+
+    return response.text, status.HTTP_200_OK
+
+
+@app.route('/subscriptions', methods=['GET'])
+def subscriptions():
+    ''' Get the azure resources '''
+
+    if isServerPreconfigured:
+        token = app.config['ACCESS_TOKEN']
+
+    else:
+        print('using client token')
+        token = request.get_data().headers['token']
+
+    url = str.format("https://management.azure.com/subscriptions?api-version=2017-05-10")
+    print(url)
+
+    headers = {
+        'cache-control': "no-cache",
+        'authorization': 'Bearer ' +  token
+    }
+    response = requests.request("GET", url, data='', headers=headers)
+    print(response.text)
+    return response.text, response.status_code
+
+
+@app.route('/azureroute', methods=['POST'])
+def resources():
+    ''' Get the azure routes established by the client '''
+
+    if isServerPreconfigured():
+        token = app.config['ACCESS_TOKEN']
+        subscription = app.config['SUBSCRIPTION']
+
+    else:
+        print('using client token')
+        token = request.get_data().headers['token']
+        subscription = request.get_data().headers['subscription']
+
+    query = request.get_data().decode('utf-8')
+    url = str.format(
+        "https://management.azure.com/subscriptions/{0}{1}", subscription, query)
+    print(url)
+
+    headers = {
+        'cache-control': "no-cache",
+        'authorization': 'Bearer ' + token,
+        'host': 'management.azure.com'
+    }
+    response = requests.request("GET", url, data='', headers=headers)
+    print(response.text)
+    return response.text, response.status_code
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     ''' Page no found message '''
     return render_template('404.html'), 400
 
+
 @app.errorhandler(500)
 def internal_server_error(e):
     ''' Server error message '''
     return render_template('500.html'), 500
+
 
 if __name__ == '__main__':
     #  change the context if you have your own ssl cert
@@ -35,4 +151,4 @@ if __name__ == '__main__':
             threaded=True,
             port=int(app.config['PORT']),
             # ssl_context='adhoc'  # self-sign ert
-           )
+            )

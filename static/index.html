@@ -30,10 +30,11 @@
             <a class="nav-link" href="#">Link</a>
           </li>
         </ul>
-        <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="text" placeholder="Username" aria-label="Username">
-          <input class="form-control mr-sm-2" type="password" placeholder="Password" aria-label="Password">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit" v-on:click="login">Login</button>
+        <form v-show="!isLoginVisible" class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" v-model='tenant_id' type="text" placeholder="Tenant ID" aria-label="tenantId">
+          <input class="form-control mr-sm-2" v-model='client_id' type="text" placeholder="Client ID" aria-label="clientId">
+          <input class="form-control mr-sm-2" v-model='client_secret' type="password" placeholder="Password" aria-label="password">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit" v-on:click="getToken">Login</button>
         </form>
       </div>
     </nav>
@@ -43,6 +44,8 @@
     <canvas id="viewport" width="800" height="600"></canvas>
   </div>
   <script src="https://unpkg.com/vue"></script>
+  <!-- <script src="https://vuejs.org/js/vue.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.4"></script>
   <script src="/static/app.js"></script>
 
   <link rel="stylesheet" href="/static/style.css" type="text/css">
