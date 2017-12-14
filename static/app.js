@@ -105,8 +105,8 @@ new Vue({
 
       console.log("creating Azure connections...;");
       for (connection of connections) {
-        ui["nodes"][connection] = { color: "blue", shape: "dot", alpha: 1 };
-        ui["edges"]["Azure"][connection] = { length: 0.8 };
+        ui["nodes"][connection] = { color: "black", shape: "dot", alpha: 1 };
+        ui["edges"]["Azure"][connection] = { length: 0.6 };
         ui["edges"][connection] = {};
         console.log(connection + " added...");
       }
