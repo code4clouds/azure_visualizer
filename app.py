@@ -161,5 +161,5 @@ if __name__ == '__main__':
             host='0.0.0.0',
             threaded=True,
             port=int(app.config['PORT']),
-            # ssl_context='adhoc'  # self-sign ert
+            ssl_context='adhoc'  # self-sign cert
            )
