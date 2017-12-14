@@ -38,6 +38,14 @@ python3 app.py
 6. Explore
 
 
+## Client mode only
+
+Set the following environmental variable to remove the credentials component from the page.
+
+- TENANT_ID
+- CLIENT_ID
+- CLIENT_SECRET
+- SUBSCRIPTION
 
 
 ## Notes

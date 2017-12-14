@@ -45,7 +45,7 @@ def serverlogin():
 def login():
     ''' Create a login request to Azure'''
     if isServerPreconfigured():
-        print('Serve configured using environmental variables')
+        print('Serve configured, using environmental variables')
         tenant_id = app.config['TENANT_ID']
         client_id = app.config['CLIENT_ID']
         client_secret = app.config['CLIENT_SECRET']
@@ -75,9 +75,10 @@ def login():
     if isServerPreconfigured():
         app.config['ACCESS_TOKEN'] = json.loads(response.text)['access_token']
         print("Server preconfigured")
-        return 'Server preconfigured', status.HTTP_204_NO_CONTENT
-
-    return response.text, status.HTTP_200_OK
+        return json.dumps({'message' : 'Server preconfigured' }), status.HTTP_204_NO_CONTENT
+    else:
+        print("Client Auth Response")
+        return json.dumps({ 'access_token': json.loads(response.text)['access_token'] }) ## response.text, status.HTTP_200_OK
 
 
 @app.route('/subscriptions', methods=['GET'])
@@ -113,8 +114,8 @@ def resources():
 
     else:
         print('using client token')
-        token = request.get_data().headers['token']
-        subscription = request.get_data().headers['subscription']
+        token = request.headers.get('token')
+        subscription = request.headers.get('subscription')
 
     query = request.get_data().decode('utf-8')
     url = str.format(
@@ -143,6 +144,16 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 
+@app.after_request
+def add_header(response):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
+    response.headers['Cache-Control'] = 'public, max-age=0'
+    return response
+
 if __name__ == '__main__':
     #  change the context if you have your own ssl cert
     #  with this:  context=('server.crt', 'server.key')
@@ -151,4 +162,4 @@ if __name__ == '__main__':
             threaded=True,
             port=int(app.config['PORT']),
             # ssl_context='adhoc'  # self-sign ert
-            )
+           )
