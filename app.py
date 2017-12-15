@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
+''' Azure Visualizer backend server '''
+
 import os
-from flask import Flask, render_template, redirect, url_for, request, current_app
+from flask import Flask, render_template, request, current_app, json
 from flask_api import status
-from werkzeug.wrappers import BaseResponse as Response
 import requests
-import json
-from azure.common.credentials import ServicePrincipalCredentials
 
 app = Flask(__name__)  # Instantiate Flask
 
@@ -75,29 +74,31 @@ def login():
     if isServerPreconfigured():
         app.config['ACCESS_TOKEN'] = json.loads(response.text)['access_token']
         print("Server preconfigured")
-        return json.dumps({'message' : 'Server preconfigured' }), status.HTTP_204_NO_CONTENT
+        return json.dumps({'message': 'Server preconfigured'}), status.HTTP_204_NO_CONTENT
     else:
         print("Client Auth Response")
-        return json.dumps({ 'access_token': json.loads(response.text)['access_token'] }) ## response.text, status.HTTP_200_OK
+        # response.text, status.HTTP_200_OK
+        return json.dumps({'access_token': json.loads(response.text)['access_token']})
 
 
 @app.route('/subscriptions', methods=['GET'])
 def subscriptions():
     ''' Get the azure resources '''
 
-    if isServerPreconfigured:
+    if isServerPreconfigured():
         token = app.config['ACCESS_TOKEN']
 
     else:
         print('using client token')
         token = request.get_data().headers['token']
 
-    url = str.format("https://management.azure.com/subscriptions?api-version=2017-05-10")
+    url = str.format(
+        "https://management.azure.com/subscriptions?api-version=2017-05-10")
     print(url)
 
     headers = {
         'cache-control': "no-cache",
-        'authorization': 'Bearer ' +  token
+        'authorization': 'Bearer ' + token
     }
     response = requests.request("GET", url, data='', headers=headers)
     print(response.text)
@@ -157,15 +158,14 @@ def azureroute():
     return response.text, response.status_code
 
 
-
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found():
     ''' Page no found message '''
     return render_template('404.html'), 400
 
 
 @app.errorhandler(500)
-def internal_server_error(e):
+def internal_server_error():
     ''' Server error message '''
     return render_template('500.html'), 500
 
@@ -179,6 +179,7 @@ def add_header(response):
     response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
+
 
 if __name__ == '__main__':
     #  change the context if you have your own ssl cert
