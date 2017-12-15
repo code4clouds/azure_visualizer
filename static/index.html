@@ -42,10 +42,10 @@
       </div>
     </nav>
     <div>
-      <v-select multiple v-model="rg_filter_selected" :options="rg_filter" :on-change="filterChanged"></v-select>
+      <v-select ref='rg_filter_dd' multiple v-model="rg_filter_selected" :options="rg_filter" :on-change="filterChanged"></v-select>
     </div>
     <canvas id="viewport" width="1800" height="1000"></canvas>
-    <div>
+    <div id="statusDiv">
       {{ message }}
     </div>
     <!-- <div>
@@ -58,6 +58,8 @@
   <script src="https://unpkg.com/vue@latest"></script>
   <script src="https://unpkg.com/vue-select@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.4"></script>
+  <script src="/static/color-hash.js"></script>
+
   <!-- <script src="https://cdn.jsdelivr.net/npm/vee-validate@latest/dist/vee-validate.js"></script> -->
   <script src="/static/app.js"></script>
 

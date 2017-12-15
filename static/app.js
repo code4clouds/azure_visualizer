@@ -15,6 +15,7 @@ new Vue({
     subscriptions: [],
     rg_filter: [],
     rg_filter_selected: [],
+    sys: null,
   },
   methods: {
     getToken: function () {
@@ -46,9 +47,12 @@ new Vue({
     filterChanged(val) {
       this.rg_filter_selected = val;
       this.getToken();
+      if(this.sys != null) {
+        this.sys.stop();
+      }
     },
     loadResourceView: function () {
-      console.log("Load Resources...");
+      this.message = "Loading Resources...";
       var body = "/resourcegroups?api-version=2017-05-10";
       this.$http
         .post("/azureresources", body, {
@@ -78,7 +82,7 @@ new Vue({
         });
     },
     loadResourceItems: function (resource_group) {
-      console.log("Load loadResourceItems...");
+      this.message = "Loading Resource Items...";
       const body = resource_group.url + '/resources';
       return this.$http
         .post("/azureroute", body, {
@@ -113,13 +117,14 @@ new Vue({
         );
     },
     logout: function () {
-      console.log("logout...");
+      this.message = "Logging Out...";
       tenant_id = "";
       client_id = "";
       client_secret = "";
     },
     render: function (connections) {
       var sys = arbor.ParticleSystem(1000, 600, 0.5); // create the system with sensible repulsion/stiffness/friction
+      this.sys = sys;
       sys.parameters({
         gravity: true
       }); // use center-gravity to make the graph settle nicely (ymmv)
@@ -138,7 +143,7 @@ new Vue({
         }
       };
 
-      console.log("creating Azure connections...;");
+      this.message = "Creating Azure Connections...";
       for (connection of connections) {
         ui["nodes"][connection.name] = {
           color: "black",
@@ -154,12 +159,13 @@ new Vue({
       }
       sys.graft(ui);
 
+      var colorHash = new ColorHash();
       for (f_connection of connections) {
         this.loadResourceItems(f_connection)
           .then((rgItems) => {
             for (rgItem of rgItems) {
               sys.addNode(rgItem.name + " ", {
-                color: "orange",
+                color: colorHash.hex(rgItem.type),
                 shape: "dot",
                 alpha: 1,
                 link: '#reference'
@@ -171,7 +177,7 @@ new Vue({
         console.log(connection + " added...");
       }
 
-      console.log("render completed...");
+      this.message = "Render Completed...";
     },
     Renderer: function (elt) {
       var dom = $(elt);
@@ -451,7 +457,7 @@ new Vue({
 
     created: function () {
       this.$nextTick(() => {
-        console.debug("Verifying if server is configured...");
+        this.message = "Verifying Remote Server Configuration...";
         fetch("/serverlogin")
           .then(res => {
             if (res.status == 200) {
