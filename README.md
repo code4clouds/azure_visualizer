@@ -1,3 +1,5 @@
+![build status](https://travis-ci.org/code4clouds/azure_visualizer.svg?branch=master)
+
 # Azure_Visualizer
 Visualize Azure Resource Group Connections
 
