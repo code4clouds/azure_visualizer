@@ -1,4 +1,5 @@
 // Vue.use(VeeValidate);
+Vue.component('v-select', VueSelect.VueSelect);
 
 new Vue({
   el: "#app",
@@ -12,10 +13,11 @@ new Vue({
     isLoginVisible: true,
     isLoading: false,
     subscriptions: [],
-    az_resources: []
+    rg_filter: [],
+    rg_filter_selected: [],
   },
   methods: {
-    getToken: function() {
+    getToken: function () {
       console.log("Login to get token...");
       var body = {
         tenant_id: this.tenant_id,
@@ -41,15 +43,15 @@ new Vue({
           this.loadResourceView();
         });
     },
-    loadResourceView: function() {
+    filterChanged(val) {
+      this.rg_filter_selected = val;
+      this.getToken();
+    },
+    loadResourceView: function () {
       console.log("Load Resources...");
-      // var headers = {
-      //   'token': this.token,
-      //   'subscription': this.subscription_id
-      // };
       var body = "/resourcegroups?api-version=2017-05-10";
       this.$http
-        .post("/azureroute", body, {
+        .post("/azureresources", body, {
           headers: {
             token: this.token,
             subscription: this.subscription_id
@@ -58,7 +60,7 @@ new Vue({
         .then(
           response => {
             this.az_resources = response.body.value;
-            console.log("azure route: " + response);
+            console.log("azureresources: " + response);
           },
           response => {
             console.log("error posting...");
@@ -67,54 +69,111 @@ new Vue({
         .then(() => {
           this.render(
             this.az_resources.map(connection => {
-              return connection.name;
+              return {
+                name: connection.name,
+                url: connection.id
+              };
             })
           );
         });
     },
-    logout: function() {
+    loadResourceItems: function (resource_group) {
+      console.log("Load loadResourceItems...");
+      const body = resource_group.url + '/resources';
+      return this.$http
+        .post("/azureroute", body, {
+          headers: {
+            token: this.token,
+          }
+        })
+        .then(
+          response => {
+            const az_resourcesItems = response.body.value;
+            // console.log("azure route: " + response.body.value[0].name);
+            return az_resourcesItems.map(item => {
+              // Create filter selection
+              if (this.rg_filter.indexOf(item.type) === -1) {
+                this.rg_filter.push(item.type);
+              }
+              return {
+                name: item.name,
+                url: item.id,
+                type: item.type,
+                parent: resource_group.name,
+              };
+            }).filter(item => {
+              // console.log('filtered: ' + this.rg_filter_selected);
+              // Filter based on the selection
+              return this.rg_filter_selected.indexOf(item.type)>=0;
+            })
+          },
+          response => {
+            console.log("error posting...");
+          }
+        );
+    },
+    logout: function () {
       console.log("logout...");
       tenant_id = "";
       client_id = "";
       client_secret = "";
     },
-    render: function(connections) {
+    render: function (connections) {
       var sys = arbor.ParticleSystem(1000, 600, 0.5); // create the system with sensible repulsion/stiffness/friction
-      sys.parameters({ gravity: true }); // use center-gravity to make the graph settle nicely (ymmv)
+      sys.parameters({
+        gravity: true
+      }); // use center-gravity to make the graph settle nicely (ymmv)
       sys.renderer = this.Renderer("#viewport"); // our newly created renderer will have its .init() method called shortly by sys...
 
-      // add some nodes to the graph and watch it go...
-      // sys.addEdge("a", "b");
-      // sys.addEdge("a", "c");
-      // sys.addEdge("a", "d");
-      // sys.addEdge("a", "e");
-      // sys.addNode("f", { alone: true, mass: 0.25 });
-
-      var CLR = {
-        branch: "#b2b19d",
-        code: "orange",
-        doc: "#922E00",
-        Azure: "#922E00",
-        demo: "#a7af00"
-      };
-
       var ui = {
-        nodes: { Azure: { color: "blue", shape: "dot", alpha: 1 } },
-        edges: { Azure: {} }
+        nodes: {
+          Azure: {
+            color: "#00abec",
+            shape: "dot",
+            alpha: 1
+          }
+        },
+        edges: {
+          Azure: {}
+        }
       };
 
       console.log("creating Azure connections...;");
       for (connection of connections) {
-        ui["nodes"][connection] = { color: "black", shape: "dot", alpha: 1 };
-        ui["edges"]["Azure"][connection] = { length: 0.6 };
-        ui["edges"][connection] = {};
+        ui["nodes"][connection.name] = {
+          color: "black",
+          shape: "dot",
+          alpha: 1,
+          link: '#reference'
+        };
+        ui["edges"]["Azure"][connection.name] = {
+          length: 0.6
+        };
+        ui["edges"][connection.name] = {};
         console.log(connection + " added...");
       }
       sys.graft(ui);
 
+      for (f_connection of connections) {
+        this.loadResourceItems(f_connection)
+          .then((rgItems) => {
+            for (rgItem of rgItems) {
+              sys.addNode(rgItem.name + " ", {
+                color: "orange",
+                shape: "dot",
+                alpha: 1,
+                link: '#reference'
+              });
+              sys.addEdge(rgItem.parent, rgItem.name + " ");
+              console.log(rgItem.parent, rgItem.name + " ");
+            }
+          });
+        console.log(connection + " added...");
+      }
+
       console.log("render completed...");
     },
-    Renderer: function(elt) {
+    Renderer: function (elt) {
       var dom = $(elt);
       var canvas = dom.get(0);
       var ctx = canvas.getContext("2d");
@@ -127,10 +186,13 @@ new Vue({
         _mouseP = null;
 
       var that = {
-        init: function(pSystem) {
+        init: function (pSystem) {
           sys = pSystem;
           sys.screen({
-            size: { width: dom.width(), height: dom.height() },
+            size: {
+              width: dom.width(),
+              height: dom.height()
+            },
             padding: [36, 60, 36, 60]
           });
 
@@ -144,16 +206,21 @@ new Vue({
             that.switchSection("demos");
           }
         },
-        resize: function() {
+        resize: function () {
           canvas.width = $(window).width();
           canvas.height = 0.75 * $(window).height();
-          sys.screen({ size: { width: canvas.width, height: canvas.height } });
+          sys.screen({
+            size: {
+              width: canvas.width,
+              height: canvas.height
+            }
+          });
           _vignette = null;
           that.redraw();
         },
-        redraw: function() {
+        redraw: function () {
           gfx.clear();
-          sys.eachEdge(function(edge, p1, p2) {
+          sys.eachEdge(function (edge, p1, p2) {
             if (edge.source.data.alpha * edge.target.data.alpha == 0) return;
             gfx.line(p1, p2, {
               stroke: "#b2b19d",
@@ -161,7 +228,7 @@ new Vue({
               alpha: edge.target.data.alpha
             });
           });
-          sys.eachNode(function(node, pt) {
+          sys.eachNode(function (node, pt) {
             var w = Math.max(20, 20 + gfx.textWidth(node.name));
             if (node.data.alpha === 0) return;
             if (node.data.shape == "dot") {
@@ -203,7 +270,7 @@ new Vue({
           that._drawVignette();
         },
 
-        _drawVignette: function() {
+        _drawVignette: function () {
           var w = canvas.width;
           var h = canvas.height;
           var r = 20;
@@ -217,7 +284,10 @@ new Vue({
             bot.addColorStop(0, "rgba(255,255,255,0)");
             bot.addColorStop(1, "white");
 
-            _vignette = { top: top, bot: bot };
+            _vignette = {
+              top: top,
+              bot: bot
+            };
           }
 
           // top
@@ -229,9 +299,9 @@ new Vue({
           ctx.fillRect(0, h - r, w, r);
         },
 
-        switchMode: function(e) {
+        switchMode: function (e) {
           if (e.mode == "hidden") {
-            dom.stop(true).fadeTo(e.dt, 0, function() {
+            dom.stop(true).fadeTo(e.dt, 0, function () {
               if (sys) sys.stop();
               $(this).hide();
             });
@@ -240,26 +310,28 @@ new Vue({
               .stop(true)
               .css("opacity", 0)
               .show()
-              .fadeTo(e.dt, 1, function() {
+              .fadeTo(e.dt, 1, function () {
                 that.resize();
               });
             if (sys) sys.start();
           }
         },
 
-        switchSection: function(newSection) {
+        switchSection: function (newSection) {
           var parent = sys.getEdgesFrom(newSection)[0].source;
-          var children = $.map(sys.getEdgesFrom(newSection), function(edge) {
+          var children = $.map(sys.getEdgesFrom(newSection), function (edge) {
             return edge.target;
           });
 
-          sys.eachNode(function(node) {
+          sys.eachNode(function (node) {
             if (node.data.shape == "dot") return; // skip all but leafnodes
 
             var nowVisible = $.inArray(node, children) >= 0;
             var newAlpha = nowVisible ? 1 : 0;
             var dt = nowVisible ? 0.5 : 0.5;
-            sys.tweenNode(node, dt, { alpha: newAlpha });
+            sys.tweenNode(node, dt, {
+              alpha: newAlpha
+            });
 
             if (newAlpha == 1) {
               node.p.x = parent.p.x + 0.05 * Math.random() - 0.025;
@@ -269,7 +341,7 @@ new Vue({
           });
         },
 
-        _initMouseHandling: function() {
+        _initMouseHandling: function () {
           // no-nonsense drag and drop (thanks springy.js)
           selected = null;
           nearest = null;
@@ -279,7 +351,7 @@ new Vue({
           var _section = null;
 
           var handler = {
-            moved: function(e) {
+            moved: function (e) {
               var pos = $(canvas).offset();
               _mouseP = arbor.Point(e.pageX - pos.left, e.pageY - pos.top);
               nearest = sys.nearest(_mouseP);
@@ -315,7 +387,7 @@ new Vue({
 
               return false;
             },
-            clicked: function(e) {
+            clicked: function (e) {
               var pos = $(canvas).offset();
               _mouseP = arbor.Point(e.pageX - pos.left, e.pageY - pos.top);
               nearest = dragged = sys.nearest(_mouseP);
@@ -323,7 +395,10 @@ new Vue({
               if (nearest && selected && nearest.node === selected.node) {
                 var link = selected.node.data.link;
                 if (link.match(/^#/)) {
-                  $(that).trigger({ type: "navigate", path: link.substr(1) });
+                  $(that).trigger({
+                    type: "navigate",
+                    path: link.substr(1)
+                  });
                 } else {
                   window.location = link;
                 }
@@ -338,7 +413,7 @@ new Vue({
 
               return false;
             },
-            dragged: function(e) {
+            dragged: function (e) {
               var old_nearest = nearest && nearest.node._id;
               var pos = $(canvas).offset();
               var s = arbor.Point(e.pageX - pos.left, e.pageY - pos.top);
@@ -352,7 +427,7 @@ new Vue({
               return false;
             },
 
-            dropped: function(e) {
+            dropped: function (e) {
               if (dragged === null || dragged.node === undefined) return;
               if (dragged.node !== null) dragged.node.fixed = false;
               dragged.node.tempMass = 1000;
@@ -374,7 +449,7 @@ new Vue({
       return that;
     },
 
-    created: function() {
+    created: function () {
       this.$nextTick(() => {
         console.debug("Verifying if server is configured...");
         fetch("/serverlogin")

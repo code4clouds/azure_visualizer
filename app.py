@@ -104,7 +104,7 @@ def subscriptions():
     return response.text, response.status_code
 
 
-@app.route('/azureroute', methods=['POST'])
+@app.route('/azureresources', methods=['POST'])
 def resources():
     ''' Get the azure routes established by the client '''
 
@@ -130,6 +130,32 @@ def resources():
     response = requests.request("GET", url, data='', headers=headers)
     print(response.text)
     return response.text, response.status_code
+
+
+@app.route('/azureroute', methods=['POST'])
+def azureroute():
+    ''' Get the azure routes established by the client '''
+
+    if isServerPreconfigured():
+        token = app.config['ACCESS_TOKEN']
+    else:
+        print('using client token')
+        token = request.headers.get('token')
+
+    resoure_url = request.get_data().decode('utf-8')
+    url = str.format(
+        "https://management.azure.com{0}?api-version=2017-05-10", resoure_url)
+    print(url)
+
+    headers = {
+        'cache-control': "no-cache",
+        'authorization': 'Bearer ' + token,
+        'host': 'management.azure.com'
+    }
+    response = requests.request("GET", url, data='', headers=headers)
+    print(response.text)
+    return response.text, response.status_code
+
 
 
 @app.errorhandler(404)
