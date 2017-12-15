@@ -3,6 +3,8 @@
 # Azure_Visualizer
 Visualize Azure Resource Group Connections
 
+![Azure Visualizer Image]("doc\images\AzVizReadme.png")
+
 # Project Definition
 
 To provide a portable tool to explore the connections between the resources of a resource group.
@@ -40,7 +42,7 @@ python3 app.py
 6. Explore
 
 
-## Client mode only
+## Disable credentials on the client mode (group dashboard)
 
 Set the following environmental variable to remove the credentials component from the page.
 
