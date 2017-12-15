@@ -37,20 +37,37 @@ python3 app.py
 
 4. Connect to the site using your favorite web browser (https://127.0.0.1:5000).  
 
-5. Login with your login token
+5. Login 
 
 6. Explore
 
+## How do I get my login credentials
 
-## Disable credentials on the client mode (group dashboard)
+You can create your service principal using the following methods:
 
-Set the following environmental variable to remove the credentials component from the page.
+- [WEB](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
+- [CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?toc=%2Fazure%2Fazure-resource-manager%2Ftoc.json&view=azure-cli-latest)
+
+## Disable credentials on the browser
+
+Before launching the application set the following environmental variables to remove the credentials component from the browser page.  
 
 - TENANT_ID
 - CLIENT_ID
 - CLIENT_SECRET
 - SUBSCRIPTION
 
+### On Linux
+Example: 
+```bash
+export TENANT_ID=123ABFC
+```
+
+### On Windows
+Exmaple:
+```
+set TENANT=123abcf
+```
 
 ## Notes
 - This project uses a self-sign certiticate, but you can bring your own if you want a Certificate Authority (CA) protection.
