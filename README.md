@@ -3,7 +3,7 @@
 # Azure_Visualizer
 Visualize Azure Resource Group Connections
 
-![Azure Visualizer Image]("doc\images\AzVizReadme.png")
+![Azure Visualizer Image](/doc/images/AzVizReadme.png)
 
 # Project Definition
 
