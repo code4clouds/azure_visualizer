@@ -1,9 +1,13 @@
 language: python
+
+branches:
+  only:
+    - master
 python:
   - 3.6
 install:
   pip install -r requirements.txt
 script:
-  -python manage.py test
-  -curl -H "Content-Type: application/json" --data '{"source_type": "Branch", "source_name": "master"}' -X POST https://registry.hub.docker.com/u/code4clouds/azure_visualizer/trigger/$dockerhub_trigger/
+  - python manage.py test
+  - curl -H "Content-Type: application/json" --data '{"source_type": "Branch", "source_name": "master"}' -X POST https://registry.hub.docker.com/u/code4clouds/azure_visualizer/trigger/$dockerhub_trigger/
   
