@@ -8,6 +8,6 @@ install:
   pip install -r requirements.txt
 script:
   - python manage.py test
-after_script
-  if: branch = master
-  - curl -X POST https://registry.hub.docker.com/u/code4clouds/azure_visualizer/trigger/$dockerhub_trigger/
+after_success:
+  - test $TRAVIS_BRANCH = "master" &&
+    curl -X POST https://registry.hub.docker.com/u/code4clouds/azure_visualizer/trigger/$dockerhub_trigger/
