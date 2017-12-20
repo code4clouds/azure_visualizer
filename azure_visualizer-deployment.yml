@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: azure-visualizer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: azure-visualizer
+    spec:
+      containers:
+      - name: azure-visualizer
+        image: code4clouds/azure_visualizer
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 5000
