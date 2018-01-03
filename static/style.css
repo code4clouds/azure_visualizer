@@ -1,3 +1,9 @@
 #app {
     background-color: white;
 }
+
+#statusDiv {
+    position: fixed; 
+    bottom:0%;
+    width:100%; 
+}
