@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: azure-visualizer
-        image: {{ Build.Repository.Name }}:{{ Build.BuildId }}
+        image: {{ IMAGE_TAG }}
         imagePullPolicy: "IfNotPresent"
         ports:
         - containerPort: 5000
