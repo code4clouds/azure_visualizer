@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: azure-visualizer
 spec:
-  replicas: 1
+  replicas: 5
   template:
     metadata:
       labels:
