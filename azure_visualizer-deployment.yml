@@ -12,6 +12,6 @@ spec:
       containers:
       - name: azure-visualizer
         image: code4clouds/azure_visualizer
-        imagePullPolicy: "IfNotPresent"
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
