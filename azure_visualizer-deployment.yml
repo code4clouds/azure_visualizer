@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: azure-visualizer
-        image: $(Build.Repository.Name):$(Build.BuildId)
+        image: registry20171221043416.azurecr.io/code4clouds/azure_visualizer:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
