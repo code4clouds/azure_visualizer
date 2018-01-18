@@ -16,8 +16,11 @@ spec:
         ports:
         - containerPort: 5000
         resources:
+          limits:
+            cpu: "1"
+            memory: 256Mi
           requests:
-            cpu: 512Mi
-            memory: 1Gi
+            cpu: ".5"
+            memory: 128Mi
       imagePullSecrets:
       - name: myregistrykey
