@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: azure-visualizer
-        image: $(IMAGE_URL)
+        image: $IMAGE_URL
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
