@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: azure-visualizer
-        image: registry20171221043416.azurecr.io/$(Build.Repository.Name):$(Build.BuildId)
+        image: $(IMAGE_URL)
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
@@ -22,5 +22,11 @@ spec:
           requests:
             cpu: ".25"
             memory: 64Mi
+        env:
+        - name IMAGE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: image-config
+            key: Image.Url
       imagePullSecrets:
       - name: myregistrykey
