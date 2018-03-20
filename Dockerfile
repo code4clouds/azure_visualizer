@@ -1,4 +1,4 @@
-FROM python:3.5.2
+FROM python:3.5
 RUN mkdir /src
 ENV EXPIRE_TIME 120
 EXPOSE 5000
