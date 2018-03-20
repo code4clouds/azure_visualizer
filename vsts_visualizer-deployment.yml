@@ -27,6 +27,6 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: image-config
-            key: Image.Url
+              key: Image.Url
       imagePullSecrets:
       - name: myregistrykey
