@@ -23,7 +23,7 @@ spec:
             cpu: ".25"
             memory: 64Mi
         env:
-        - name IMAGE_URL
+        - name: IMAGE_URL
           valueFrom:
             configMapKeyRef:
               name: image-config
