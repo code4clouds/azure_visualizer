@@ -1,1 +1,0 @@
-cat vsts_visualizer-deployment.yml | sed 's/\$IMAGE_URL'"/registry20171221043416.azurecr.io/$Build.Repository.Name:$Build.BuildId/g" > vsts_visualizer-deployment.build.yml && mv vsts_visualizer-deployment.build.yml vsts_visualizer-deployment.yml
