@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: azure-visualizer
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: azure.code4clouds.com
+    http:
+      paths:
+      - path: /azure-visualizer
+        backend:
+          serviceName: azure-visualizer
+          servicePort: 5000

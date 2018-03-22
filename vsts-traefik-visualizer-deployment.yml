@@ -22,11 +22,5 @@ spec:
           requests:
             cpu: ".25"
             memory: 64Mi
-        env:
-        - name: IMAGE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: image-config
-              key: Image.Url
       imagePullSecrets:
       - name: myregistrykey
