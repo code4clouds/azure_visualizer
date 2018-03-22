@@ -10,17 +10,20 @@ spec:
         k8s-app: azure-visualizer
     spec:
       containers:
-      - name: azure-visualizer
-        image: $IMAGE_URL
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 5000
-        resources:
-          limits:
-            cpu: ".50"
-            memory: 128Mi
-          requests:
-            cpu: ".25"
-            memory: 64Mi
+        - name: azure-visualizer
+          image: $IMAGE_URL
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PROTOCOL
+              value: HTTP        
+          resources:
+            limits:
+              cpu: ".50"
+              memory: 128Mi
+            requests:
+              cpu: ".25"
+              memory: 64Mi
       imagePullSecrets:
       - name: myregistrykey

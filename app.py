@@ -17,7 +17,7 @@ app.config['TENANT_ID'] = os.getenv('TENANT_ID', '')
 app.config['CLIENT_ID'] = os.getenv('CLIENT_ID', '')
 app.config['CLIENT_SECRET'] = os.getenv('CLIENT_SECRET', '')
 app.config['SUBSCRIPTION'] = os.getenv('SUBSCRIPTION', '')
-
+app.config['PROTOCOL'] = os.getenv('PROTOCOL','')
 
 @app.route('/', methods=['GET'])
 def root():
@@ -182,11 +182,18 @@ def add_header(response):
 
 
 if __name__ == '__main__':
-    #  change the context if you have your own ssl cert
+    #  add the context if you have your own ssl cert
     #  with this:  context=('server.crt', 'server.key')
+
+    if app.config['PROTOCOL'] == '' or app.config['PROTOCOL'] == 'HTTPS': 
+        ssl_context='adhoc'
+    elif app.config['PROTOCOL'] == 'HTTP':
+        ssl_context=None
+
     app.run(debug=True,
             host='0.0.0.0',
             threaded=True,
             port=int(app.config['PORT']),
-            ssl_context='adhoc'  # self-sign cert
-           )
+            ssl_context=ssl_context  # self-sign cert
+        )
+
