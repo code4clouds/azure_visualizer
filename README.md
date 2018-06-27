@@ -56,6 +56,7 @@ Before launching the application set the following environmental variables to re
 - CLIENT_ID
 - CLIENT_SECRET
 - SUBSCRIPTION
+- PROTOCOL
 
 ### On Linux
 Example: 
