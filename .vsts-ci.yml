@@ -1,7 +1,7 @@
-queue: 'Default'
+queue: 'Default' #HHosted Linux Preview
 
 steps:  
-- script: python -m pip install
+- script: apt-get install python-pip
   displayName: 'Install PIP'
 - script: pip install -r requirements.txt
   displayName: 'Install requirements'
