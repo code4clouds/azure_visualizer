@@ -1,8 +1,6 @@
 queue: 'Default' #HHosted Linux Preview
 
 steps:  
-- script: sudo apt-get install python-pip
-  displayName: 'Install PIP'
 - script: pip install -r requirements.txt
   displayName: 'Install requirements'
 
