@@ -1,6 +1,15 @@
 queue: 'Hosted Linux Preview'
 
 steps:  
-- script: pip install -r requirements.txt
+- script: python -m pip install --upgrade pip && pip install -r requirements.txt
 
-- task: python manage.py test
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.6'
+    architecture: 'x64'
+
+- task: PythonScript@0
+  inputs:
+    targetType: 'filePath'
+    filePath: 'manage.py'
+    arguments: 'test'
