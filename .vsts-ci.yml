@@ -1,0 +1,6 @@
+queue: 'Hosted Linux Preview'
+
+steps:  
+- script: pip install -r requirements.txt
+
+- task: python manage.py test
