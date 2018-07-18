@@ -1,7 +1,7 @@
 queue: 'Default' #Hosted Linux Preview
 
 steps:  
-- script: python -m venv venv
+- script: python3 -m venv venv
   displayName: 'create VENV'
 - script: . venv/bin/activate
   displayName: 'use VENV'
