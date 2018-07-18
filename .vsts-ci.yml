@@ -1,10 +1,10 @@
 queue: 'Default' #Hosted Linux Preview
 
 steps:  
-# - script: python3 -m venv venv
-#   displayName: 'create VENV'
-# - script: . venv/bin/activate
-#   displayName: 'use VENV'
+- script: python3 -m venv venv
+  displayName: 'create VENV'
+- script: . venv/bin/activate
+  displayName: 'use VENV'
 - script: pip3 install -r requirements.txt --user
   displayName: 'Install requirements'
 
