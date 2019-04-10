@@ -2,11 +2,11 @@ azure-common==1.1.8
 azure-mgmt-compute==3.0.1
 azure-mgmt-nspkg==2.0.0
 azure-nspkg==2.0.0
-Flask==0.12.2
+Flask==0.12.3
 Flask-API==1.0
 Flask-Bootstrap==3.3.7.1
 Flask-Script==2.0.6
 Flask-Testing==0.6.2
 Flask-WTF==0.14.2
 pyOpenSSL==17.5.0
-requests==2.18.4
+requests==2.20.0
