@@ -11,8 +11,8 @@ class TestProtocolConfig(unittest.TestCase):
         self.assertIsNone(azure_app.get_ssl_context('http'))
         self.assertIsNone(azure_app.get_ssl_context('HtTp'))
 
-    def test_https_protocol_defaults_to_adhoc(self):
-        """HTTPS and empty values keep the default adhoc SSL context."""
+    def test_default_protocol_returns_adhoc(self):
+        """HTTPS, empty, and None values keep the default adhoc SSL context."""
         self.assertEqual(azure_app.get_ssl_context('https'), 'adhoc')
         self.assertEqual(azure_app.get_ssl_context('HTTPS'), 'adhoc')
         self.assertEqual(azure_app.get_ssl_context(''), 'adhoc')
