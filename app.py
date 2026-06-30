@@ -19,6 +19,18 @@ app.config['CLIENT_SECRET'] = os.getenv('CLIENT_SECRET', '')
 app.config['SUBSCRIPTION'] = os.getenv('SUBSCRIPTION', '')
 app.config['PROTOCOL'] = os.getenv('PROTOCOL','')
 
+
+def get_ssl_context(protocol):
+    """Return None for HTTP, otherwise the default adhoc SSL context.
+
+    Args:
+        protocol: Configured protocol as a string or None.
+    """
+    protocol = (protocol or '').upper()
+    if protocol == 'HTTP':
+        return None
+    return 'adhoc'
+
 @app.route('/', methods=['GET'])
 def root():
     ''' Read the root document and load form'''
@@ -184,11 +196,7 @@ def add_header(response):
 if __name__ == '__main__':
     #  add the context if you have your own ssl cert
     #  with this:  context=('server.crt', 'server.key')
-
-    if app.config['PROTOCOL'] == '' or app.config['PROTOCOL'] == 'HTTPS': 
-        ssl_context='adhoc'
-    elif app.config['PROTOCOL'] == 'HTTP':
-        ssl_context=None
+    ssl_context = get_ssl_context(app.config['PROTOCOL'])
 
     app.run(debug=True,
             host='0.0.0.0',
@@ -196,4 +204,3 @@ if __name__ == '__main__':
             port=int(app.config['PORT']),
             ssl_context=ssl_context  # self-sign cert
         )
-
