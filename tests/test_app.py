@@ -16,6 +16,7 @@ class TestProtocolConfig(unittest.TestCase):
         self.assertEqual(azure_app.get_ssl_context('https'), 'adhoc')
         self.assertEqual(azure_app.get_ssl_context('HTTPS'), 'adhoc')
         self.assertEqual(azure_app.get_ssl_context(''), 'adhoc')
+        self.assertEqual(azure_app.get_ssl_context(None), 'adhoc')
 
 
 if __name__ == '__main__':

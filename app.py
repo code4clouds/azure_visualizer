@@ -21,6 +21,7 @@ app.config['PROTOCOL'] = os.getenv('PROTOCOL','')
 
 
 def get_ssl_context(protocol):
+    """Return the SSL context for the configured protocol."""
     protocol = (protocol or '').upper()
     if protocol == 'HTTP':
         return None
